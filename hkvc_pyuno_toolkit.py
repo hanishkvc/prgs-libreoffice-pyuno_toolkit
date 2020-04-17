@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 # A simple pyuno helper toolkit/library
-# v20200418IST0157, HanishKVC
+# v20200418IST0227, HanishKVC
 #
 
 import os
 import uno
 import time
+
 
 
 def oo_run():
@@ -37,19 +38,40 @@ def oo_getsheets(document):
     return sheets, controller
 
 
-if __name__ == "__main__":
+def oo_test():
     oo_run()
     time.sleep(2)
     oo = oo_connect()
     doc = oo_opendoc(oo, "/tmp/t.xlsx")
     sheets, ctlr = oo_getsheets(doc)
-    print("NumRows", len(sheets[0].getRows()), "\n Rows", sheets[0].getRows())
-    print("NumCols", len(sheets[0].getColumns()), "\n Cols", sheets[0].getColumns())
+    # sheet.NamedRanges, sheet.getRows(), sheet.Rows, sheet.getColumns
+    # sheet.NamedRanges['MyRange'], sheet.NamedRanges.getByName('MyRange')
+    # sheet.getPrintAreas(), sheet.showDetail(?)
+    #print(dir(sheet))
+    #print(dir(sheet.getCellByPosition(c,r)))
+    CellContentTypeEMPTY = uno.Enum("com.sun.star.table.CellContentType","EMPTY")
     for sheet in sheets:
-        print("Sheet", dir(sheet))
-        # sheet.NamedRanges, sheet.getRows(), sheet.Rows, sheet.getColumns
-        # sheet.NamedRanges['MyRange'], sheet.NamedRanges.getByName('MyRange')
-        # sheet.getPrintAreas(), sheet.showDetail(?)
-        print("Cell", dir(sheet.getCellByPosition(5,5)))
-        print(sheet.getCellByPosition(5,5).getValue())
+        numRows = len(sheet.Rows)
+        numCols = len(sheet.Columns)
+        for r in range(numRows):
+            if r > numRows:
+                continue
+            print("INFO:NR:{}, NC:{}, R:{}".format(numRows, numCols, r))
+            iEmptyCols = 0
+            for c in range(numCols):
+                if c > numCols:
+                    continue
+                if (sheet.getCellByPosition(c,r).getType() == CellContentTypeEMPTY):
+                    iEmptyCols += 1
+                    if iEmptyCols > 10:
+                        numCols = c
+                        print("INFO:AdjustNumCols:{}:too many EmptyCols, curCol {}".format(numCols, c))
+                print("{}\t".format(sheet.getCellByPosition(c,r).getString()), end="")
+            print("")
+    return doc, sheets, ctlr
+
+
+
+if __name__ == "__main__":
+    oo_test()
 
