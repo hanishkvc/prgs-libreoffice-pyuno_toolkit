@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 # A simple pyuno helper toolkit/library
-# v20200418IST0227, HanishKVC
+# v20200418IST0255, HanishKVC
 #
 
 import os
 import uno
 import time
+import sys
 
 
 
@@ -38,10 +39,22 @@ def oo_getsheets(document):
     return sheets, controller
 
 
-def oo_test():
-    oo_run()
-    time.sleep(2)
-    oo = oo_connect()
+def _oo_props(**args):
+    props = []
+    for key in args:
+        prop = uno.createUnoStruct("com.sun.star.beans.PropertyValue")
+        prop.Name = key
+        prop.Value = args[key]
+        props.append(prop)
+    return tuple(props)
+
+
+def oo_savedoc(doc, filePath, filterName):
+    props = _oo_props(FilterName=filterName)
+    doc.storeToURL(uno.systemPathToFileUrl(os.path.abspath(filePath)), props)
+
+
+def oo_test(oo):
     doc = oo_opendoc(oo, "/tmp/t.xlsx")
     sheets, ctlr = oo_getsheets(doc)
     # sheet.NamedRanges, sheet.getRows(), sheet.Rows, sheet.getColumns
@@ -56,7 +69,8 @@ def oo_test():
         for r in range(numRows):
             if r > numRows:
                 continue
-            print("INFO:NR:{}, NC:{}, R:{}".format(numRows, numCols, r))
+            if (r%100) == 0:
+                print("INFO:NR:{}, NC:{}, R:{}".format(numRows, numCols, r), file=sys.stderr)
             iEmptyCols = 0
             for c in range(numCols):
                 if c > numCols:
@@ -66,12 +80,28 @@ def oo_test():
                     if iEmptyCols > 10:
                         numCols = c
                         print("INFO:AdjustNumCols:{}:too many EmptyCols, curCol {}".format(numCols, c))
+                else:
+                    # Ensure that we look for atleast 10 cols beyond current row's first empty col
+                    if numCols < (c+10):
+                        numCols = c+10
+                        print("INFO:AdjustNumCols:{}:too few EmptyCols buffer, curCol {}".format(numCols, c))
                 print("{}\t".format(sheet.getCellByPosition(c,r).getString()), end="")
             print("")
     return doc, sheets, ctlr
 
 
+def oo_conv_ss2csv(oo, sIn, sOut):
+    doc = oo_opendoc(oo, sIn)
+    oo_savedoc(doc, sOut, filterName="Text - txt - csv (StarCalc)")
+
 
 if __name__ == "__main__":
-    oo_test()
+    oo_run()
+    time.sleep(2)
+    oo = oo_connect()
+    # python3 hkvc_pyuno_convert.py ss2csv /tmp/t.xlsx /tmp/t.csv
+    if sys.argv[1] == "ss2csv":
+        oo_conv_ss2csv(oo, sys.argv[2], sys.argv[3])
+    else:
+        oo_test(oo)
 
