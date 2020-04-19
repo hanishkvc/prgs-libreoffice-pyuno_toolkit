@@ -9,10 +9,12 @@ import time
 import sys
 
 
+OOPORT=2002
+
 
 def oo_run():
     if os.fork() == 0:
-        os.system('libreoffice --accept="socket,host=localhost,port=2002;urp;&"')
+        os.system('libreoffice --accept="socket,host=localhost,port={};urp;&"'.format(OOPORT))
         exit()
     else:
         print("INFO:oo_run:libreoffice should be started now")
@@ -21,7 +23,7 @@ def oo_run():
 def oo_connect():
     localCtxt = uno.getComponentContext()
     resolver = localCtxt.ServiceManager.createInstanceWithContext("com.sun.star.bridge.UnoUrlResolver", localCtxt)
-    ctxt = resolver.resolve("uno:socket,host=localhost,port=2002;urp;StarOffice.ComponentContext")
+    ctxt = resolver.resolve("uno:socket,host=localhost,port={};urp;StarOffice.ComponentContext".format(OOPORT))
     smgr = ctxt.ServiceManager
     desktop = smgr.createInstanceWithContext("com.sun.star.frame.Desktop", ctxt)
     PropertyValue = smgr.createInstanceWithContext("com.sun.star.beans.PropertyValue", ctxt)
