@@ -99,7 +99,7 @@ def oo_conv_ss2csv(oo, sIn, sOut):
 
 if __name__ == "__main__":
     oo_run()
-    time.sleep(2)
+    time.sleep(10)
     oo = oo_connect()
     # python3 hkvc_pyuno_convert.py ss2csv /tmp/t.xlsx /tmp/t.csv
     if sys.argv[1] == "ss2csv":
