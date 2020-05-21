@@ -20,11 +20,11 @@ def oo_run():
         print("INFO:oo_run:libreoffice should be started now")
 
 
-def oo_connect():
+def oo_connect(retryCnt=128):
     localCtxt = uno.getComponentContext()
     resolver = localCtxt.ServiceManager.createInstanceWithContext("com.sun.star.bridge.UnoUrlResolver", localCtxt)
     bConnected = False
-    for i in range(128):
+    for i in range(retryCnt):
         try:
             ctxt = resolver.resolve("uno:socket,host=localhost,port={};urp;StarOffice.ComponentContext".format(OOPORT))
             print("INFO:oo_connect:Connected to libreoffice...")
@@ -32,6 +32,7 @@ def oo_connect():
             break
         except NoConnectException:
             print("WARN:oo_connect:%d:Not yet connected to libreoffice, may try again..."%(i))
+            time.sleep(1)
     if not bConnected:
         print("ERRR:oo_connect:Timed out connecting to libreoffice, quiting...")
         raise NoConnectException("ERRR:oo_connect:Timed out connecting to libreoffice")
@@ -110,7 +111,6 @@ def oo_conv_ss2csv(oo, sIn, sOut):
 
 if __name__ == "__main__":
     oo_run()
-    time.sleep(10)
     oo = oo_connect()
     # python3 hkvc_pyuno_convert.py ss2csv /tmp/t.xlsx /tmp/t.csv
     if sys.argv[1] == "ss2csv":
