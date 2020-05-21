@@ -30,7 +30,8 @@ def oo_connect(retryCnt=128):
             print("INFO:oo_connect:Connected to libreoffice...")
             bConnected = True
             break
-        except NoConnectException:
+        except Exception as e:
+            #print("WARN:oo_connect:Exception[{}]:SysExcInfo[{}]".format(e,sys.exc_info()))
             print("WARN:oo_connect:%d:Not yet connected to libreoffice, may try again..."%(i))
             time.sleep(1)
     if not bConnected:
