@@ -23,7 +23,18 @@ def oo_run():
 def oo_connect():
     localCtxt = uno.getComponentContext()
     resolver = localCtxt.ServiceManager.createInstanceWithContext("com.sun.star.bridge.UnoUrlResolver", localCtxt)
-    ctxt = resolver.resolve("uno:socket,host=localhost,port={};urp;StarOffice.ComponentContext".format(OOPORT))
+    bConnected = False
+    for i in range(128):
+        try:
+            ctxt = resolver.resolve("uno:socket,host=localhost,port={};urp;StarOffice.ComponentContext".format(OOPORT))
+            print("INFO:oo_connect:Connected to libreoffice...")
+            bConnected = True
+            break
+        except NoConnectException:
+            print("WARN:oo_connect:%d:Not yet connected to libreoffice, may try again..."%(i))
+    if not bConnected:
+        print("ERRR:oo_connect:Timed out connecting to libreoffice, quiting...")
+        raise NoConnectException("ERRR:oo_connect:Timed out connecting to libreoffice")
     smgr = ctxt.ServiceManager
     desktop = smgr.createInstanceWithContext("com.sun.star.frame.Desktop", ctxt)
     PropertyValue = smgr.createInstanceWithContext("com.sun.star.beans.PropertyValue", ctxt)
@@ -107,3 +118,5 @@ if __name__ == "__main__":
     else:
         oo_test(oo)
 
+
+# vim: set sts=4 expandtab: #
